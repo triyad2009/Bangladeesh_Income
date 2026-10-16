@@ -92,8 +92,8 @@ CREATE TABLE IF NOT EXISTS user_machines (
  FOREIGN KEY(machine_id) REFERENCES mining_machines(id)
 );
 INSERT OR IGNORE INTO mining_machines(id,name,description,cost_points,rate_per_hour,sort_order) VALUES
- (1,'Starter Drill','A basic starter machine for new miners.',500,15,1),
- (2,'Copper Rig','A stronger rig for steady virtual production.',2500,90,2),
- (3,'Turbo Miner','High-output virtual mining equipment.',10000,400,3),
- (4,'Quantum Farm','The highest tier in this starter lineup.',50000,1800,4);
+ (1,'Starter Drill','An entry-level rig that new miners can afford quickly.',100,5,1),
+ (2,'Copper Rig','A stronger rig for steady virtual production.',1500,60,2),
+ (3,'Turbo Miner','High-output virtual mining equipment.',7500,350,3),
+ (4,'Quantum Farm','The highest tier in this starter lineup.',30000,1500,4);
 CREATE INDEX IF NOT EXISTS idx_user_machines_user ON user_machines(telegram_id);
