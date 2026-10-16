@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS claims (
  reviewed_by TEXT,
  reviewed_at TEXT,
  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
- UNIQUE(task_id, telegram_id, status),
  FOREIGN KEY(task_id) REFERENCES tasks(id),
  FOREIGN KEY(telegram_id) REFERENCES users(telegram_id)
 );
