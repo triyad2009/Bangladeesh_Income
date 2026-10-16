@@ -1,4 +1,5 @@
 import {getUser,json,fail} from '../_lib/auth.js';
+import {encryptAccount} from '../_lib/encryption.js';
 export async function onRequestGet({request,env}) {
  try {
   const {user}=await getUser(request,env);
@@ -18,7 +19,8 @@ export async function onRequestPost({request,env}) {
   const userRow=await env.DB.prepare('SELECT balance_points FROM users WHERE telegram_id=?').bind(String(user.id)).first();
   const pending=await env.DB.prepare("SELECT COALESCE(SUM(amount_points),0) n FROM withdrawals WHERE telegram_id=? AND status='pending'").bind(String(user.id)).first();
   if((userRow?.balance_points||0)-(pending?.n||0)<amount) return json({error:'Insufficient available points.'},400);
-  await env.DB.prepare("INSERT INTO withdrawals(telegram_id,amount_points,method,account_last4,status) VALUES(?,?,?,?, 'pending')").bind(String(user.id),amount,method,account.slice(-4)).run();
-  return json({ok:true,status:'pending',message:'Request queued for review. Only the last four digits are stored.'});
+  const encrypted=await encryptAccount(account,env);
+  await env.DB.prepare("INSERT INTO withdrawals(telegram_id,amount_points,method,account_last4,account_encrypted,status) VALUES(?,?,?,?,?, 'pending')").bind(String(user.id),amount,method,account.slice(-4),encrypted).run();
+  return json({ok:true,status:'pending',message:'Request queued for review. Payment details are encrypted at rest.'});
  } catch(e){return fail(e);}
 }
