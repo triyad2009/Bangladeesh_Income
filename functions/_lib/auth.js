@@ -14,7 +14,6 @@ export async function authenticate(request, env) {
  if (!receivedHash || !authDate) throw new Error('Invalid Telegram sign-in data.');
  if (Math.abs(Date.now()/1000 - authDate) > 86400) throw new Error('Telegram sign-in expired. Close and reopen the Mini App.');
  params.delete('hash');
- params.delete('signature');
  const dataCheckString = [...params.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>k+'='+v).join('\n');
  const secret = await hmac(encoder.encode('WebAppData'), env.BOT_TOKEN);
  const calculated = hex(await hmac(secret, dataCheckString));
