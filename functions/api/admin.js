@@ -1,4 +1,5 @@
 import {getUser,json,fail} from '../_lib/auth.js';
+import {decryptAccount} from '../_lib/encryption.js';
 export async function onRequestGet({request,env}) {
  try {
   const {isAdmin}=await getUser(request,env);
@@ -10,11 +11,19 @@ export async function onRequestGet({request,env}) {
     FROM claims c JOIN tasks t ON t.id=c.task_id JOIN users u ON u.telegram_id=c.telegram_id
     WHERE c.status='pending' ORDER BY c.id ASC LIMIT 100`).all();
   } else if(kind==='withdrawals') {
-   results=await env.DB.prepare(`SELECT w.id,w.telegram_id,w.amount_points,w.method,w.account_last4,w.status,w.created_at,u.first_name,u.username
+   results=await env.DB.prepare(`SELECT w.id,w.telegram_id,w.amount_points,w.method,w.account_last4,w.account_encrypted,w.status,w.created_at,u.first_name,u.username
     FROM withdrawals w JOIN users u ON u.telegram_id=w.telegram_id
     WHERE w.status='pending' ORDER BY w.id ASC LIMIT 100`).all();
   } else return json({error:'Unknown admin view.'},400);
-  return json({items:results.results||[]});
+  const items=results.results||[];
+  if(kind==='withdrawals') {
+   for(const item of items) {
+    try { item.account_number=await decryptAccount(item.account_encrypted,env); }
+    catch { item.account_number=null; }
+    delete item.account_encrypted;
+   }
+  }
+  return json({items});
  } catch(e){return fail(e);}
 }
 export async function onRequestPost({request,env}) {
