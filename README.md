@@ -33,3 +33,11 @@ Use a trusted Telegram ID helper bot or inspect the id field returned by a priva
 - Do not promise cash value for points until funding, eligibility and payout rules are established.
 - Never add the bot token to index.html, client-side JavaScript, or public repository files.
 - The server validates Telegram Mini App initData; do not trust initDataUnsafe as authentication.
+
+
+## Mining economy
+- The app grants 100 virtual TR automatically when a user opens or refreshes the Mini App, at most once every 60 minutes.
+- Users can buy machines with TR. Machines produce virtual TR/hour, with offline production capped at 24 hours per collection.
+- The starter machine costs 100 TR and generates 5 TR/hour; higher tiers cost more and produce more.
+- `schema.sql` includes the mining tables and machine catalog. On a brand-new D1 database, run the complete schema once. On an existing database, run only the section beginning `-- Virtual mining economy` in the D1 console.
+- `1 TR = $0.001` is an illustrative in-app conversion, not a market price or guaranteed cash payout. The app does not send automatic payments. Publish a funded payout policy and add anti-abuse controls before real withdrawals.
