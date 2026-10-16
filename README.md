@@ -28,7 +28,7 @@ Use a trusted Telegram ID helper bot or inspect the id field returned by a priva
 
 ## Important notes before launch
 - This project does not send payments. Admin approval is a bookkeeping status, not proof of a completed payout.
-- Withdrawal requests currently store only the last four digits of the payment account, so an operator cannot pay from the database alone. Add a secure encrypted payout-details workflow before accepting real withdrawals.
+- Withdrawal phone numbers are encrypted at rest with ACCOUNT_ENCRYPTION_KEY. If that secret is lost, stored payout numbers cannot be decrypted; keep a secure backup outside GitHub.
 - Configure clear terms, task evidence checks, rate limiting and a privacy notice before public launch.
 - Do not promise cash value for points until funding, eligibility and payout rules are established.
 - Never add the bot token to index.html, client-side JavaScript, or public repository files.
