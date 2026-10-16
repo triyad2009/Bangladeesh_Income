@@ -65,3 +65,35 @@ CREATE INDEX IF NOT EXISTS idx_withdrawals_status ON withdrawals(status);
 INSERT INTO tasks(title,description,reward_points,task_type,status)
 SELECT 'Welcome to Bangladesh Income','Read the task rules and submit a short note to confirm you understand them.',10,'custom','active'
 WHERE NOT EXISTS (SELECT 1 FROM tasks WHERE title='Welcome to Bangladesh Income');
+
+-- Virtual mining economy. TR is an in-app unit; it does not fund real-money payouts.
+CREATE TABLE IF NOT EXISTS mining_state (
+ telegram_id TEXT PRIMARY KEY,
+ last_hourly_claim_at TEXT,
+ last_collected_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+ FOREIGN KEY(telegram_id) REFERENCES users(telegram_id)
+);
+CREATE TABLE IF NOT EXISTS mining_machines (
+ id INTEGER PRIMARY KEY,
+ name TEXT NOT NULL,
+ description TEXT NOT NULL DEFAULT '',
+ cost_points INTEGER NOT NULL CHECK(cost_points > 0),
+ rate_per_hour INTEGER NOT NULL CHECK(rate_per_hour >= 0),
+ active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)),
+ sort_order INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS user_machines (
+ telegram_id TEXT NOT NULL,
+ machine_id INTEGER NOT NULL,
+ quantity INTEGER NOT NULL DEFAULT 1 CHECK(quantity > 0),
+ purchased_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+ PRIMARY KEY(telegram_id,machine_id),
+ FOREIGN KEY(telegram_id) REFERENCES users(telegram_id),
+ FOREIGN KEY(machine_id) REFERENCES mining_machines(id)
+);
+INSERT OR IGNORE INTO mining_machines(id,name,description,cost_points,rate_per_hour,sort_order) VALUES
+ (1,'Starter Drill','A basic starter machine for new miners.',500,15,1),
+ (2,'Copper Rig','A stronger rig for steady virtual production.',2500,90,2),
+ (3,'Turbo Miner','High-output virtual mining equipment.',10000,400,3),
+ (4,'Quantum Farm','The highest tier in this starter lineup.',50000,1800,4);
+CREATE INDEX IF NOT EXISTS idx_user_machines_user ON user_machines(telegram_id);
