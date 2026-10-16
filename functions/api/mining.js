@@ -55,6 +55,14 @@ export async function onRequestPost({request,env}){
    if(!Number.isSafeInteger(machineId)||machineId<1)return json({error:'Choose a valid mining machine.'},400);
    const machine=await env.DB.prepare('SELECT * FROM mining_machines WHERE id=? AND active=1').bind(machineId).first();
    if(!machine)return json({error:'This mining machine is not available.'},404);
+   // Settle production at the old rate before a purchase so the new rate is not applied retroactively.
+   await env.DB.prepare('UPDATE mining_state SET last_collected_at=? WHERE telegram_id=?').bind(now,id).run();
+   if(s.pending>0){
+    await env.DB.batch([
+     env.DB.prepare('UPDATE users SET balance_points=balance_points+?,updated_at=? WHERE telegram_id=?').bind(s.pending,now,id),
+     env.DB.prepare("INSERT INTO ledger(telegram_id,delta_points,reason,reference_type) VALUES(?,?,'Mining machine earnings','mining')").bind(id,s.pending)
+    ]);
+   }
    const balance=await env.DB.prepare('SELECT balance_points FROM users WHERE telegram_id=?').bind(id).first();
    if(Number(balance?.balance_points||0)<machine.cost_points)return json({error:'Not enough TR to buy this machine.'},400);
    const owned=await env.DB.prepare('SELECT quantity FROM user_machines WHERE telegram_id=? AND machine_id=?').bind(id,machineId).first();
